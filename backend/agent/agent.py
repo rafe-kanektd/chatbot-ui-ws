@@ -17,32 +17,30 @@ def query_llm(user_input: str, model: str = "huggingface") -> str:
 # Gemini integration with retry
 def query_gemini(user_input: str) -> str:
     if not GEMINI_TOKEN:
-        return "Gemini API key is missing."
+        return "Gemini API key is missing. Check your .env and variable name."
 
-    API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:002?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKart0Bs"
-    headers = {"Content-Type": "application/json"}
-    payload = {
-        "contents": [{"parts": [{"text": user_input}]}]
+    API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_TOKEN}"
+
+    headers = {
+        "Content-Type": "application/json"
     }
 
-    for attempt in range(3):
-        try:
-            response = requests.post(API_URL, headers=headers, json=payload)
-            if response.status_code == 429:
-                import time
-                wait_time = 2 ** attempt
-                print(f"Rate limited. Retrying in {wait_time}s...")
-                time.sleep(wait_time)
-                continue
-            response.raise_for_status()
-            data = response.json()
-            return data["candidates"][0]["content"]["parts"][0]["text"]
-        except Exception as e:
-            print("Gemini API error:", e)
-            return "Error fetching response from Gemini"
+    payload = {
+        "contents": [
+            {
+                "parts": [{"text": user_input}]
+            }
+        ]
+    }
 
-    return "Max retries exceeded (rate limited)."
-
+    try:
+        response = requests.post(API_URL, headers=headers, json=payload)
+        response.raise_for_status()
+        data = response.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception as e:
+        print("Gemini API error:", e)
+        return "Error fetching response from Gemini"
 
 # Hugging Face model call
 def query_huggingface(user_input: str) -> str:
