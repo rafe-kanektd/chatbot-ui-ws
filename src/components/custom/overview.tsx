@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { MessageCircle, BotIcon } from 'lucide-react';
+import logo from '../../../orion_logo.png';
 
 export const Overview = () => {
   return (
@@ -14,14 +15,10 @@ export const Overview = () => {
     >
       <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
         <p className="flex flex-row justify-center gap-4 items-center">
-          <BotIcon size={44}/>
-          <span>+</span>
-          <MessageCircle size={44}/>
+          <img src={logo} alt="Orion search logo" /> {/*TODO: Change image*/}
         </p>
         <p>
-          Welcome to <strong>chatbot-ui</strong><br />
-          a open source template made by<br />
-          <strong>Leon Binder</strong> and <strong>Christoph Handschuh</strong>.
+          Welcome to <strong>Orion Search</strong><br />
         </p>
       </div>
     </motion.div>

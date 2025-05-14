@@ -5,6 +5,7 @@ import { useState } from "react";
 import { message } from "../../interfaces/interfaces"
 import { Overview } from "@/components/custom/overview";
 import { Header } from "@/components/custom/header";
+import Footer from "@/components/custom/footer";
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
@@ -77,6 +78,8 @@ export function Chat() {
           isLoading={isLoading}
         />
       </div>
+      <Footer />
     </div>
   );
-}
+
+};
