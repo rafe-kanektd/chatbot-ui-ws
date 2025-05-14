@@ -1,68 +1,50 @@
 import { ChatInput } from "@/components/custom/chatinput";
 import { PreviewMessage, ThinkingMessage } from "../../components/custom/message";
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { message } from "../../interfaces/interfaces"
 import { Overview } from "@/components/custom/overview";
 import { Header } from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 import { v4 as uuidv4 } from 'uuid';
-
-const socket = new WebSocket("ws://localhost:8090");
+import axios from 'axios';
 
 export function Chat() {
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const [messages, setMessages] = useState<message[]>([]);
   const [question, setQuestion] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const messageHandlerRef = useRef<((event: MessageEvent) => void) | null>(null);
-
-  const cleanupMessageHandler = () => {
-    if (messageHandlerRef.current && socket) {
-      socket.removeEventListener("message", messageHandlerRef.current);
-      messageHandlerRef.current = null;
-    }
-  };
+  const [selectedModel, setSelectedModel] = useState<string>("huggingface");
 
   async function handleSubmit(text?: string) {
-    if (!socket || socket.readyState !== WebSocket.OPEN || isLoading) return;
+    if (isLoading) return;
 
     const messageText = text || question;
-    setIsLoading(true);
-    cleanupMessageHandler();
-
     const traceId = uuidv4();
+    setIsLoading(true);
     setMessages(prev => [...prev, { content: messageText, role: "user", id: traceId }]);
-    socket.send(messageText);
     setQuestion("");
 
     try {
-      const messageHandler = (event: MessageEvent) => {
-        setIsLoading(false);
-        if (event.data.includes("[END]")) return;
+      const response = await axios.post("http://localhost:8000/search", {
+        user_input: messageText,
+        model: selectedModel,
+      });
 
-        setMessages(prev => {
-          const lastMessage = prev[prev.length - 1];
-          const newContent = lastMessage?.role === "assistant"
-            ? lastMessage.content + event.data
-            : event.data;
-
-          const newMessage = { content: newContent, role: "assistant", id: traceId };
-          return lastMessage?.role === "assistant"
-            ? [...prev.slice(0, -1), newMessage]
-            : [...prev, newMessage];
-        });
-
-        if (event.data.includes("[END]")) {
-          cleanupMessageHandler();
-        }
+      const botMessage = {
+        content: response.data.result,
+        role: "assistant",
+        id: uuidv4(),
       };
 
-      messageHandlerRef.current = messageHandler;
-      socket.addEventListener("message", messageHandler);
+      setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
-      console.error("WebSocket error:", error);
+      console.error("API error:", error);
+      setMessages((prev) => [
+        ...prev,
+        { content: "Sorry, something went wrong.", role: "assistant", id: uuidv4() },
+      ]);
+    } finally {
       setIsLoading(false);
     }
   }
@@ -78,7 +60,17 @@ export function Chat() {
         {isLoading && <ThinkingMessage />}
         <div ref={messagesEndRef} className="shrink-0 min-w-[24px] min-h-[24px]" />
       </div>
-      <div className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+      <div className="flex flex-col w-full md:max-w-3xl mx-auto px-4 pb-4 md:pb-6 space-y-2">
+        <div className="flex justify-end">
+          <select
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            className="rounded-md border border-gray-700 bg-zinc-800 px-3 py-2 text-sm text-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+          >
+            <option value="huggingface">🤖 Hugging Face</option>
+            <option value="gemini">✨ Gemini</option>
+          </select>
+        </div>
         <ChatInput
           question={question}
           setQuestion={setQuestion}
@@ -89,4 +81,5 @@ export function Chat() {
       <Footer />
     </div>
   );
+
 };
