@@ -2,6 +2,8 @@
 
 A lightweight and modern chat interface for LLM interactions with Markdown support!
 
+This branch features the changes contributed by [CameliaK](https://github.com/CameliaK), including integrated web search functionality connected to the LLM prompt.
+
 ## Overview
 
 A minimalist chat interface built with React and TypeScript, designed to be easily integrated with any LLM backend. Features a clean and modern design.
@@ -50,6 +52,9 @@ python test.py
 This project was built by:
 - [Leon Binder](https://github.com/LeonBinder)
 - [Christoph Handschuh](https://github.com/ChristophHandschuh)
+
+Additional contribution by:
+- [CameliaK](https://github.com/CameliaK) – Implemented web search and integrated it into the LLM prompt
 
 Some code components were inspired by and adapted from [Vercel's AI Chatbot](https://github.com/vercel/ai-chatbot).
 
