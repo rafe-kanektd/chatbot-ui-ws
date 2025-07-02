@@ -15,14 +15,14 @@ interface ChatInputProps {
 
 const suggestedActions = [
     {
-        title: 'How is the weather',
-        label: 'in Vienna?',
-        action: 'How is the weather in Vienna today?',
+        title: 'What shifts are coming up',
+        label: 'in the next 5 days',
+        action: 'What shifts are coming up in the next five days',
     },
     {
-        title: 'Tell me a fun fact',
-        label: 'about pandas',
-        action: 'Tell me an interesting fact about pandas',
+        title: 'What is the riskiest',
+        label: 'upcoming shift',
+        action: 'What is the riskiest upcoming shift?',
     },
 ];
 

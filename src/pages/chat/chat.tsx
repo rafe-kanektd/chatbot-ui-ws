@@ -6,8 +6,8 @@ import { message } from "../../interfaces/interfaces"
 import { Overview } from "@/components/custom/overview";
 import { Header } from "@/components/custom/header";
 import {v4 as uuidv4} from 'uuid';
-
-const socket = new WebSocket("ws://localhost:8090"); //change to your websocket endpoint
+import { useEffect } from "react";
+const socket = new WebSocket("ws://localhost:8090");
 
 export function Chat() {
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
@@ -16,7 +16,6 @@ export function Chat() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const messageHandlerRef = useRef<((event: MessageEvent) => void) | null>(null);
-
   const cleanupMessageHandler = () => {
     if (messageHandlerRef.current && socket) {
       socket.removeEventListener("message", messageHandlerRef.current);
@@ -68,6 +67,24 @@ async function handleSubmit(text?: string) {
   }
 }
 
+useEffect(() => {
+  if (!socket || socket.readyState !== WebSocket.OPEN) {
+    socket.addEventListener("open", () => {
+      console.log("WebSocket connection opened");
+      const initialMessage = "Hello! How can I help you today?";
+      const traceId = uuidv4();
+      setMessages(prev => [...prev, { content: initialMessage, role: "assistant", id: traceId }]);
+    });
+  } else {
+    const initialMessage = "Hello! How can I help you today?";
+    const traceId = uuidv4();
+    setMessages(prev => [...prev, { content: initialMessage, role: "assistant", id: traceId }]);
+  }
+
+  return () => {
+    cleanupMessageHandler();
+  };
+}, []);
   return (
     <div className="flex flex-col min-w-0 h-dvh bg-background">
       <Header/>
